@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework.Input;
 
 namespace Cocos2D
@@ -1884,5 +1885,19 @@ namespace Cocos2D
         {
         }
         #endregion
+    }
+
+    public static class CCNodeExtensions
+    {
+        public static Task<CCFiniteTimeAction> RunActionAsTask(this CCNode node, CCFiniteTimeAction action)
+        {
+            var completionSource = new System.Threading.Tasks.TaskCompletionSource<CCFiniteTimeAction>();
+            var sequence = new CCSequence(action,
+                new CCCallFuncO(obj => completionSource.TrySetResult((CCFiniteTimeAction) obj), action));
+
+            node.RunAction(sequence);
+            return completionSource.Task;
+        }
+
     }
 }
